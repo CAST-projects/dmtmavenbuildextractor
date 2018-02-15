@@ -126,7 +126,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 
     private static void extractWarFiles(String key, File warfile, File destinationFolder)
     {
-		Logging.info("cast.dmt.extractor.mavenbuild.extractingEarFile", "EAR", key);
+		Logging.info("cast.dmt.extractor.mavenbuild.extractingWarFile", "WAR", key);
 		String pomFilePath = null;
 		List<String> jarFiles = new ArrayList<String>();
 
