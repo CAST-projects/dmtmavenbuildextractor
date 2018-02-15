@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>com.castsoftware.dmtmavenbuildextractor</id>
+    <version>_VERSION_-build_BUILDNO_</version>
+    <title>Maven build extractor</title>
+    <authors>CAST Product</authors>
+    <owners>CAST</owners>
+    <licenseUrl>https://help.castsoftware.com/hc/en-us/articles/212612648-AIP-Extension-License</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>http://doc.castsoftware.com/display/DOCEXT/Maven+Build+Extractor+1.0</projectUrl>
+    <iconUrl>https://github.com/CAST-projects/dmtjeenetbeansdiscoverer/raw/master/com_castsoftware_dmtmavenbuildextractor.png</iconUrl>
+    <releaseNotes>http://doc.castsoftware.com/display/DOCEXT/Maven+Build+Extractor+1.0+-+Release+Notes</releaseNotes>
+    <description>Support for extractor sources from maven build artifacts.</description>
+    <dependencies>
+      <dependency id="CAIP" version="8.3.0"/>
+    </dependencies>
+		<tags>DMT EXTRACTOR JEE CAIP8.3</tags>		
+ </metadata>
+  <files>
+    <file src="TOOLS\**" target="TOOLS" />    
+    <file src="Maven build extractor Technology Extension Version.txt" target="Maven build extractor Technology Extension Version.txt" />    
+    <file src="readme.html" target="readme.html" />    
+  </files>  
+</package>

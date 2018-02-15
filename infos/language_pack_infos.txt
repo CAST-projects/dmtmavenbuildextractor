@@ -1,0 +1,4 @@
+LPVERS=1.0.0
+EXT_NAME=Maven build extractor
+DEPENDENCIES=dmtmavenbuildextractor-1.0.0.dmtplugin
+PLUGIN_DELIVERY=dmtmavenbuildextractor
