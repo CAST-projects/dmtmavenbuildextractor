@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="sources"/>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="src" path="tests"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CAST-COE-Junit"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-Connectivity.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngine-Test.tests.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngine.jar" sourcepath="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngine.sources.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryModel.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-Java.jar" sourcepath="/CAST-COE-TargetFlat/binaries/jars/CAST-Java.sources.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-MDA.jar" sourcepath="/CAST-COE-TargetFlat/binaries/jars/CAST-MDA.sources.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-MDA.tests.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-Utilities.jar" sourcepath="/CAST-COE-TargetFlat/binaries/jars/CAST-Utilities.sources.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-CommandLineApplications.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngineCLI.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngineCLI.tests.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/3rdParties/java/binaries/easymock-3.1/easymock-3.1.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-Utilities.tests.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-DeliveryEngine.tests.jar"/>
+	<classpathentry kind="lib" path="/CAST-COE-TargetFlat/binaries/jars/CAST-Junit.tests.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

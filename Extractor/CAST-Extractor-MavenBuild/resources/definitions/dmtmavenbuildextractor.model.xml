@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document>
+    <library imageRootPath="icons" javaRootPath="com.castsoftware.dmt.extractor.mavenbuild" product="DMT" symbol="dmtmavenbuildextractor" version="1.0" dependencies="delivery:2.10;dmtdevfolderextractor:1.0">
+        <entity symbol="SourceFolderExtractor" baseEntity="delivery.SourceFileBaseExtractor" label="Compiled files with maven source code">
+            <topic symbol="a" viewForm="body">
+                <topic symbol="connection">
+                    <field symbol="folderPath" valueEntity="system.DirectoryPath" composite="true" label="Root folder" multiplicity="1"/>
+                    <field symbol="connectionURL" override="true">
+                        <value formula="true">(folderPath)</value>
+                    </field>
+                    <field symbol="wizardReference" valueEntity="delivery.AddPackageReply" transient="true" value="dmtdevfolderextractor.SourceAddPackageReply">
+                    	<helpText>Select a source folder on your local file system that contains *.jar, *.dar, *.ear files</helpText>
+                    </field>
+                </topic>
+				<topic symbol="items" viewForm="section">
+					<topic symbol="filters" label="">
+						<field symbol="rootPaths" override="true" label=""/>
+						<!-- <field symbol="ignoredPathPatterns" override="true" label=""/> -->
+					</topic>
+				</topic>
+                <topic symbol="parameters">
+                    <field symbol="javaClassName" override="true">
+                        <value formula="true">'com.castsoftware.dmt.extractor.mavenbuild.MavenBuildExtractor'</value>
+                    </field>
+                </topic>
+            </topic>
+        </entity>
+    </library>
+
+	<conversion requires="" provides="dmtmavenbuildextractor:1.0">
+		<!-- Library installation -->
+	</conversion>
+</document>

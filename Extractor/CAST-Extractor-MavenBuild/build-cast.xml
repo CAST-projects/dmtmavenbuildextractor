@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="CAST-Extractor-SiebelOracle">
+	<reinstallPropertyParsing/>
+	
+	<target name="pre-package">
+		<contentSync todir="${projectInfo/${currentproject.name}/dmtplugin.package.additionalDir}">
+			<fileset dir="${executeProjectSet.project.directory}/config">
+				<include name="CASTSiebel_orcl.config"/>
+				<include name="CASTSiebelBrowse_orcl.config"/>
+			</fileset>
+		</contentSync>
+	</target>
+    
+	<target name="publish">
+		<copy file="${projectInfo/${currentproject.name}/package.dmtplugin.file}"
+			  todir="${upload.dir}"
+		      overwrite="true"/>
+	</target>    
+		
+</project>
