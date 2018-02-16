@@ -79,7 +79,12 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     		String filename = f.getName().toLowerCase();
     		if (filename.endsWith(".jar"))
     		{
-    			int pos = filename.length() - "-sources.jar".length();
+    			int pos = 0;
+    			if (filename.contains("-sources.jar"))
+    				pos = filename.length() - "-sources.jar".length();
+    			else
+    				pos = filename.length() - ".jar".length();
+    			
     			if (pos > 0)
     				jarFiles.put(filename.substring(0, pos), f);
     		}
