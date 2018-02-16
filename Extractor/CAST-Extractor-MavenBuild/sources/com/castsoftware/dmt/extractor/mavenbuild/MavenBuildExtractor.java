@@ -498,11 +498,24 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 	sbf.append("</groupId>");
                 	sbf.append("\r\n");
                 	sbf.append("<artifactId>");
-                	sbf.append("xxx");
+                	String artifactId = "xxx";
+                	String version = "1.0.0";
+                	int pos = jarFile.lastIndexOf("/");
+                	if (pos > 0)
+                		artifactId = jarFile.substring(pos + 1);
+                	else
+                		artifactId = jarFile;
+                	pos = artifactId.lastIndexOf("-");
+                	if (pos > 0)
+                	{
+                		version = artifactId.substring(pos + 1, artifactId.length() - 4);
+                		artifactId = artifactId.substring(0, pos);
+                	}
+                	sbf.append(artifactId);
                 	sbf.append("</artifactId>");
                 	sbf.append("\r\n");
                 	sbf.append("<version>");
-                	sbf.append("1.0.0");
+                	sbf.append(version);
                 	sbf.append("</version>");
                 	sbf.append("\r\n");
                 	sbf.append("<scope>");
@@ -510,7 +523,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 	sbf.append("</scope>");
                 	sbf.append("\r\n");
                 	sbf.append("<systemPath>");
-                	sbf.append("./src/main/webapp/" + jarFile);
+                	sbf.append("src/main/webapp/" + jarFile);
                 	sbf.append("</systemPath>");
                 	sbf.append("\r\n");
                 	sbf.append("</dependency>");
