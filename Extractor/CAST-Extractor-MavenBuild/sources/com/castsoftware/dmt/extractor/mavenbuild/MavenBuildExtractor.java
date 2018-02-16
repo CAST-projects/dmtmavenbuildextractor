@@ -231,6 +231,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 Boolean isInDependencies = false;
                 Boolean isInDependencyManagement = false;
                 Boolean isInScm= false;
+                Boolean isInDevelopers= false;
 
             	reader = new BufferedReader(new StringReader(pomContent), pomContent.length());
 
@@ -315,6 +316,13 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 		        		isInScm = false;
 		        		continue;
 		        	}
+		        	else if (line.contains("<developers>"))
+		        		isInDevelopers = true;
+		        	else if (line.contains("</developers>"))
+		        	{
+		        		isInDevelopers = false;
+		        		continue;
+		        	}
 		        	
 		        	if (isInParent)
 		        	{
@@ -326,7 +334,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 		        		properties.append(readline);
 		        		properties.append("\r\n");
 		        	}
-		        	else if (isInBuild || isInRepositories || isInPluginRepositories || isInReporting || isInProfiles || isInDependencies || isInDependencyManagement || isInScm)
+		        	else if (isInBuild || isInRepositories || isInPluginRepositories || isInReporting || isInProfiles || isInDependencies || isInDependencyManagement || isInScm || isInDevelopers)
 		        		continue;
 		        	
 		        	if (line.startsWith("<groupId>"))
@@ -477,6 +485,40 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         	sbf.append("</build>");
         	sbf.append("\r\n");
         	//TODO: add the list of jar files as dependencies
+        	if (jarFiles.size() > 0)
+        	{
+            	sbf.append("<dependencies>");
+            	sbf.append("\r\n");
+        		for (String jarFile : jarFiles)
+        		{
+                	sbf.append("<dependency>");
+                	sbf.append("\r\n");
+                	sbf.append("<groupId>");
+                	sbf.append("xxx");
+                	sbf.append("</groupId>");
+                	sbf.append("\r\n");
+                	sbf.append("<artifactId>");
+                	sbf.append("xxx");
+                	sbf.append("</artifactId>");
+                	sbf.append("\r\n");
+                	sbf.append("<version>");
+                	sbf.append("1.0.0");
+                	sbf.append("</version>");
+                	sbf.append("\r\n");
+                	sbf.append("<scope>");
+                	sbf.append("system");
+                	sbf.append("</scope>");
+                	sbf.append("\r\n");
+                	sbf.append("<systemPath>");
+                	sbf.append("./src/main/webapp/" + jarFile);
+                	sbf.append("</systemPath>");
+                	sbf.append("\r\n");
+                	sbf.append("</dependency>");
+                	sbf.append("\r\n");
+        		}
+            	sbf.append("</dependencies>");
+            	sbf.append("\r\n");
+        	}
         	sbf.append("</project>");
 
         	File pomFile = new File(pomFilePath);
