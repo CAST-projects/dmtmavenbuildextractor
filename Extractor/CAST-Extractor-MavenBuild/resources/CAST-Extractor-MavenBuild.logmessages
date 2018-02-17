@@ -16,6 +16,8 @@
 		<message id="cast.dmt.extractor.mavenbuild.extractingEarFile" format="Extracting the ear file '%EAR%'" />
 		<message id="cast.dmt.extractor.mavenbuild.extractingWarFile" format="Extracting the ear file '%WAR%'" />
 		<message id="cast.dmt.extractor.mavenbuild.jarMatchingDar" format="Including the jar file '%JAR%' corresponding to the dar file" />
+		<message id="cast.dmt.extractor.mavenbuild.jarMatchingEar" format="Including the jar file '%JAR%' corresponding to the ear file" />
 		<message id="cast.dmt.extractor.mavenbuild.jarWithoutDar" format="Including the jar file '%JAR%' without corresponding dar file" />
+		<message id="cast.dmt.extractor.mavenbuild.pomMatchingJar" format="Including the pom file '%JAR%' corresponding to the jar file" />
 	</language>
 </messages>

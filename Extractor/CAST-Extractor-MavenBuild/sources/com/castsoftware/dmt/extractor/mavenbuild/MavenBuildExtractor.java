@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.hsqldb.lib.FileUtil;
+
 import com.castsoftware.dmt.engine.extraction.AbstractBlankInitialRootExtractor;
 import com.castsoftware.util.FileHelper;
 import com.castsoftware.util.logger.Logging;
@@ -70,6 +72,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         Map<String, File> jarFiles = new HashMap<String, File>();
     	Map<String, File> darFiles = new HashMap<String, File>();
     	Map<String, File> earFiles = new HashMap<String, File>();
+    	Map<String, File> pomFiles = new HashMap<String, File>();
     	
         File globalRootFile = new File(configuration.getURL());
 
@@ -88,7 +91,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     			if (pos > 0)
     				jarFiles.put(filename.substring(0, pos), f);
     		}
-    		if (filename.endsWith(".dar"))
+    		else if (filename.endsWith(".dar"))
     		{
     			int pos = filename.lastIndexOf("dar-");
     			int posExtension = filename.lastIndexOf(".dar");
@@ -96,18 +99,26 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     			if (pos > 0)
     				darFiles.put(darname + filename.substring(pos + 3, posExtension), f);
     		}
-    		if (filename.endsWith(".ear"))
+    		else if (filename.endsWith(".ear"))
     		{
-    			earFiles.put(filename.substring(0, filename.length() - 4), f);
+    			int pos = filename.lastIndexOf("ear-");
+    			int posExtension = filename.lastIndexOf(".ear");
+    			String earname = filename.substring(0, pos);
+    			if (pos > 0)
+    				earFiles.put(earname + filename.substring(pos + 3, posExtension), f);
+    		}
+    		else if (filename.endsWith(".pom.xml"))
+    		{
+    			pomFiles.put(filename.substring(0, filename.length() - 8), f);
     		}
     	}
     	
-    	// 2. extract the files in the temp folder
+    	// 2. extract the dar files in the temp folder
     	for (Map.Entry<String, File> entry : darFiles.entrySet()) {
     	    String key = entry.getKey();
     	    File value = entry.getValue();
     		// 2.1 extract the dar
-    	    extractDarFiles(key, value, root.getContentDirectoryFile());
+    	    extractDarFile(key, value, root.getContentDirectoryFile());
     	    
     		// 2.2 extract the corresponding jar
     		if (jarFiles.containsKey(key))
@@ -118,18 +129,57 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     			// remove
     			jarFiles.remove(key);
     		}
+    		if (earFiles.containsKey(key))
+    			earFiles.remove(key);
     	}
     	
-    	// 2. extract the files in the temp folder
+    	// 3. extract the ear files in the temp folder
+    	for (Map.Entry<String, File> entry : earFiles.entrySet()) {
+    	    String key = entry.getKey();
+    	    File value = entry.getValue();
+    		// 3.1 extract the ear
+    	    extractEarFile(key, value, root.getContentDirectoryFile());
+    	    
+    		// 3.2 extract the corresponding jar
+    		if (jarFiles.containsKey(key))
+    		{
+    			// extract
+    			Logging.info("cast.dmt.extractor.mavenbuild.jarMatchingEar", "JAR", key);
+    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile());
+    			// remove
+    			jarFiles.remove(key);
+    		}
+    	}
+
+    	// 4. extract the jar files in the temp folder
     	for (Map.Entry<String, File> entry : jarFiles.entrySet()) {
     	    String key = entry.getKey();
     	    File value = entry.getValue();
+    	    
+    		// 3.1 extract the jar
 			Logging.info("cast.dmt.extractor.mavenbuild.jarWithoutDar", "JAR", key);
-			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile());
-    	}
+			extractJarFile(key, value, root.getContentDirectoryFile());
+
+			// 3.2 find the pom
+			if (pomFiles.containsKey(key))
+			{
+				Logging.info("cast.dmt.extractor.mavenbuild.pomMatchingJar", "JAR", key);
+				File pomFile = pomFiles.get(key);
+				// move
+    			String destinationName = null;
+				try {
+					destinationName = FileHelper.getPortablePath(root.getContentDirectoryFile().getCanonicalPath()) + "/" + key.substring(0, key.lastIndexOf("-")) + "/pom.xml";
+	    			//File destinationFile = new File(destinationName);
+					//pomFile.renameTo(destinationFile);
+	    			FileHelper.safeCopyFile(null, pomFile.getCanonicalPath(), destinationName);
+				} catch (IOException e) {
+					// NOP
+				}
+			}
+    	}    	
     }
 
-    private static void extractWarFiles(String key, File warfile, File destinationFolder)
+    private static void extractWarFile(String key, File warFile, File destinationFolder)
     {
 		Logging.info("cast.dmt.extractor.mavenbuild.extractingWarFile", "WAR", key);
 		String pomFilePath = null;
@@ -144,7 +194,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
             byte[] buf = new byte[1024];
             ZipInputStream zipinputstream = null;
             ZipEntry zipentry;
-            zipinputstream = new ZipInputStream(new FileInputStream(warfile.getCanonicalPath()));
+            zipinputstream = new ZipInputStream(new FileInputStream(warFile.getCanonicalPath()));
  
             zipentry = zipinputstream.getNextEntry();
             while (zipentry != null) 
@@ -235,10 +285,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 
             	reader = new BufferedReader(new StringReader(pomContent), pomContent.length());
 
-            	int numline = 0;
 	            for (String readline = reader.readLine(); readline != null; readline = reader.readLine())
 	            {
-	            	numline++;
 	            	String line = readline.trim();
 	            	if (line.isEmpty())
 	            		continue;
@@ -574,7 +622,62 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         }
     }
     
-    private static void extractEarFiles(String key, File earfile, File destinationFolder)
+    private static void extractEarFile(String key, File earFile, File destinationFolder)
+    {
+		Logging.info("cast.dmt.extractor.mavenbuild.extractingEarFile", "EAR", key);
+
+        try
+        {
+            String destinationName = FileHelper.getPortablePath(destinationFolder.getCanonicalPath());
+            destinationName += "/" + key.substring(0, key.lastIndexOf("-")) + "/";
+            File fld = new File(destinationName);
+            if (!fld.exists())
+            	fld.mkdir();
+            byte[] buf = new byte[1024];
+            ZipInputStream zipinputstream = null;
+            ZipEntry zipentry;
+            zipinputstream = new ZipInputStream(new FileInputStream(earFile.getCanonicalPath()));
+ 
+            zipentry = zipinputstream.getNextEntry();
+            while (zipentry != null) 
+            { 
+                //for each entry to be extracted
+                String entryName = zipentry.getName();
+                //System.out.println("entryname "+entryName);
+                if (!entryName.endsWith(".war"))
+                {
+                	zipentry = zipinputstream.getNextEntry();
+                	continue;
+                }
+                 
+                int n;
+                FileOutputStream fileoutputstream;
+                String filename = entryName.substring(entryName.lastIndexOf("/") + 1);
+                fileoutputstream = new FileOutputStream(destinationName + filename);             
+ 
+                while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
+                    fileoutputstream.write(buf, 0, n);
+ 
+                fileoutputstream.close(); 
+                zipinputstream.closeEntry();
+                
+                File warFile = new File(destinationName + filename);
+                extractWarFile(key, warFile, destinationFolder);
+                warFile.delete();
+                
+                zipentry = zipinputstream.getNextEntry();
+ 
+            }
+ 
+            zipinputstream.close();
+        }
+        catch (Exception e)
+        {
+            //e.printStackTrace();
+        }
+    }
+
+    private static void extractEarFileFromDar(String key, File earFile, File destinationFolder)
     {
 		Logging.info("cast.dmt.extractor.mavenbuild.extractingEarFile", "EAR", key);
 
@@ -585,7 +688,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
             byte[] buf = new byte[1024];
             ZipInputStream zipinputstream = null;
             ZipEntry zipentry;
-            zipinputstream = new ZipInputStream(new FileInputStream(earfile.getCanonicalPath()));
+            zipinputstream = new ZipInputStream(new FileInputStream(earFile.getCanonicalPath()));
  
             zipentry = zipinputstream.getNextEntry();
             while (zipentry != null) 
@@ -610,7 +713,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 zipinputstream.closeEntry();
                 
                 File warFile = new File(destinationName + entryName);
-                extractWarFiles(key, warFile, destinationFolder);
+                extractWarFile(key, warFile, destinationFolder);
                 warFile.delete();
                 
                 zipentry = zipinputstream.getNextEntry();
@@ -625,7 +728,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         }
     }
     
-    private static void extractDarFiles(String key, File darfile, File destinationFolder)
+    private static void extractDarFile(String key, File darFile, File destinationFolder)
     {
 		Logging.info("cast.dmt.extractor.mavenbuild.extractingDarFile", "DAR", key);
 
@@ -634,11 +737,12 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
             String destinationName = FileHelper.getPortablePath(destinationFolder.getCanonicalPath());
             destinationName += "/" + key.substring(0, key.lastIndexOf("-")) + "/";
             File fld = new File(destinationName);
-            fld.mkdir();
+            if (!fld.exists())
+            	fld.mkdir();
             byte[] buf = new byte[1024];
             ZipInputStream zipinputstream = null;
             ZipEntry zipentry;
-            zipinputstream = new ZipInputStream(new FileInputStream(darfile.getCanonicalPath()));
+            zipinputstream = new ZipInputStream(new FileInputStream(darFile.getCanonicalPath()));
  
             zipentry = zipinputstream.getNextEntry();
             while (zipentry != null) 
@@ -654,8 +758,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                  
                 int n;
                 FileOutputStream fileoutputstream;
-                String fileName = entryName.substring(entryName.lastIndexOf("/") + 1);
-                fileoutputstream = new FileOutputStream(destinationName + fileName);             
+                String filename = entryName.substring(entryName.lastIndexOf("/") + 1);
+                fileoutputstream = new FileOutputStream(destinationName + filename);             
  
                 while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
                     fileoutputstream.write(buf, 0, n);
@@ -663,8 +767,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 fileoutputstream.close(); 
                 zipinputstream.closeEntry();
                 
-                File earFile = new File(destinationName + fileName);
-                extractEarFiles(key, earFile, destinationFolder);
+                File earFile = new File(destinationName + filename);
+                extractEarFileFromDar(key, earFile, destinationFolder);
                 earFile.delete();
                 
                 zipentry = zipinputstream.getNextEntry();
@@ -697,7 +801,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         }
     }    
     
-    private static void extractJarFile(String key, File jarfile, File destinationFolder)
+    private static void extractJarFile(String key, File jarFile, File destinationFolder)
     {
         try
         {
@@ -710,7 +814,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
             byte[] buf = new byte[1024];
             ZipInputStream zipinputstream = null;
             ZipEntry zipentry;
-            zipinputstream = new ZipInputStream(new FileInputStream(jarfile.getCanonicalPath()));
+            zipinputstream = new ZipInputStream(new FileInputStream(jarFile.getCanonicalPath()));
  
             zipentry = zipinputstream.getNextEntry();
             while (zipentry != null) 
