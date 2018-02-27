@@ -27,6 +27,7 @@ import com.castsoftware.util.logger.exceptions.LogException;
  */
 public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 {
+    Map<String, File> jarFiles, darFiles, earFiles, warFiles, pomFiles = null;
 
 	/**
 	 * Folder extractor constructor
@@ -34,6 +35,11 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     public MavenBuildExtractor()
     {
         // NOP
+    	jarFiles = new HashMap<String, File>();
+    	darFiles = new HashMap<String, File>();
+    	earFiles = new HashMap<String, File>();
+    	warFiles = new HashMap<String, File>();
+    	pomFiles = new HashMap<String, File>();
     }
 
     @Override
@@ -60,25 +66,50 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     	return;
     }
 
-    @Override
-    public void extract(List<? extends ISourceRoot> initialRoots, IRootFactory rootFactory, IConfiguration configuration)
-        throws LogException
+    private static String getKey(String filename, String extension)
     {
-        ISourceRoot root = initialRoots.get(0);
-
-        Map<String, File> jarFiles = new HashMap<String, File>();
-    	Map<String, File> darFiles = new HashMap<String, File>();
-    	Map<String, File> earFiles = new HashMap<String, File>();
-    	Map<String, File> pomFiles = new HashMap<String, File>();
-    	
-        File globalRootFile = new File(configuration.getURL());
-
-        // 1. identify the list of files to extract and the mode
-    	for (File f : globalRootFile.listFiles())
+    	String key = null;
+    	String name = null;
+    	String version = null;
+    	int nbSkippedCharacters = 0;
+		int posExtension = filename.lastIndexOf("." + extension);
+		int pos = filename.lastIndexOf("mdb" + extension + "-");
+		if (pos > 0)
+			nbSkippedCharacters = 6;
+		else
+		{
+			pos = filename.lastIndexOf(extension + "-");
+			if (pos > 0)
+				nbSkippedCharacters = 3;
+			else
+				pos = filename.lastIndexOf("-");
+		}
+		
+		if (pos > 0)
+		{
+			name = filename.substring(0, pos);
+			version = filename.substring(pos + nbSkippedCharacters, posExtension);
+		}
+		
+		if (name != null && version != null)
+			key = name + version;
+		else
+			Logging.warn("cast.dmt.extractor.mavenbuild.invalidName", "FILE", filename);
+    	return key;
+    }
+    private void getFiles(File rootFolder)
+    {
+    	for (File f : rootFolder.listFiles())
     	{
+    		if (f.isDirectory())
+    			getFiles(f);
+    		
     		String filename = f.getName().toLowerCase();
     		if (filename.endsWith(".jar"))
     		{
+				// specific jar filename KrankenAntragMDBEJB-1.0.39-sources.jar
+				if (filename.contains("mdbejb"))
+					filename = filename.replace("mdbejb", "");
     			int pos = 0;
     			if (filename.contains("-sources.jar"))
     				pos = filename.length() - "-sources.jar".length();
@@ -90,25 +121,39 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     		}
     		else if (filename.endsWith(".dar"))
     		{
-    			int pos = filename.lastIndexOf("dar-");
-    			int posExtension = filename.lastIndexOf(".dar");
-    			String darname = filename.substring(0, pos);
-    			if (pos > 0)
-    				darFiles.put(darname + filename.substring(pos + 3, posExtension), f);
+    			String key = getKey(filename, "dar");
+    			if (key != null)
+    				darFiles.put(key, f);
     		}
     		else if (filename.endsWith(".ear"))
     		{
-    			int pos = filename.lastIndexOf("ear-");
-    			int posExtension = filename.lastIndexOf(".ear");
-    			String earname = filename.substring(0, pos);
-    			if (pos > 0)
-    				earFiles.put(earname + filename.substring(pos + 3, posExtension), f);
+    			String key = getKey(filename, "ear");
+    			if (key != null)
+    				earFiles.put(key, f);
+    		}
+    		else if (filename.endsWith(".war"))
+    		{
+    			String key = getKey(filename, "war");
+    			if (key != null)
+    				warFiles.put(key, f);
     		}
     		else if (filename.endsWith(".pom.xml"))
     		{
     			pomFiles.put(filename.substring(0, filename.length() - 8), f);
     		}
     	}
+
+    }
+    @Override
+    public void extract(List<? extends ISourceRoot> initialRoots, IRootFactory rootFactory, IConfiguration configuration)
+        throws LogException
+    {
+        ISourceRoot root = initialRoots.get(0);
+
+        File globalRootFile = new File(configuration.getURL());
+
+        // 1. identify the list of files to extract and the mode
+        getFiles(globalRootFile);
     	
     	// 2. extract the dar files in the temp folder
     	for (Map.Entry<String, File> entry : darFiles.entrySet()) {
@@ -122,12 +167,16 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     		{
     			// extract
     			Logging.info("cast.dmt.extractor.mavenbuild.jarMatchingDar", "JAR", key);
-    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile());
+    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile(), false);
     			// remove
     			jarFiles.remove(key);
     		}
+    		
+    		// when the DAR is available, ignore EAR and WAR
     		if (earFiles.containsKey(key))
     			earFiles.remove(key);
+    		if (warFiles.containsKey(key))
+    			warFiles.remove(key);
     	}
     	
     	// 3. extract the ear files in the temp folder
@@ -142,22 +191,44 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     		{
     			// extract
     			Logging.info("cast.dmt.extractor.mavenbuild.jarMatchingEar", "JAR", key);
-    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile());
+    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile(), false);
+    			// remove
+    			jarFiles.remove(key);
+    		}
+    		
+    		// when the EAR is available, ignore WAR
+    		if (warFiles.containsKey(key))
+    			warFiles.remove(key);
+    	}
+
+    	// 4. extract the war files in the temp folder
+    	for (Map.Entry<String, File> entry : warFiles.entrySet()) {
+    	    String key = entry.getKey();
+    	    File value = entry.getValue();
+    		// 4.1 extract the war
+    	    extractWarFile(key, value, root.getContentDirectoryFile());
+    	    
+    		// 4.2 extract the corresponding jar
+    		if (jarFiles.containsKey(key))
+    		{
+    			// extract
+    			Logging.info("cast.dmt.extractor.mavenbuild.jarMatchingWar", "JAR", key);
+    			extractJarFile(key, jarFiles.get(key), root.getContentDirectoryFile(), false);
     			// remove
     			jarFiles.remove(key);
     		}
     	}
 
-    	// 4. extract the jar files in the temp folder
+    	// 5. extract the jar files in the temp folder
     	for (Map.Entry<String, File> entry : jarFiles.entrySet()) {
     	    String key = entry.getKey();
     	    File value = entry.getValue();
     	    
-    		// 3.1 extract the jar
-			Logging.info("cast.dmt.extractor.mavenbuild.jarWithoutDar", "JAR", key);
-			extractJarFile(key, value, root.getContentDirectoryFile());
+    		// 5.1 extract the jar
+			Logging.info("cast.dmt.extractor.mavenbuild.jarAlone", "JAR", key);
+			extractJarFile(key, value, root.getContentDirectoryFile(), true);
 
-			// 3.2 find the pom
+			// 5.2 find the pom
 			if (pomFiles.containsKey(key))
 			{
 				Logging.info("cast.dmt.extractor.mavenbuild.pomMatchingJar", "JAR", key);
@@ -798,7 +869,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         }
     }    
     
-    private static void extractJarFile(String key, File jarFile, File destinationFolder)
+    private static void extractJarFile(String key, File jarFile, File destinationFolder, Boolean jarAlone)
     {
         try
         {
@@ -845,11 +916,14 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
  
             zipinputstream.close();
 
-            File pomFile = new File(pomFilePath);
-            if (pomFile.exists())
-            	transformPom(pomFilePath, null);
-            else
-            	Logging.warn("cast.dmt.extractor.mavenbuild.noPomInJar", "JAR", key);
+            if (jarAlone)
+            {
+	            File pomFile = new File(pomFilePath);
+	            if (pomFile.exists())
+	            	transformPom(pomFilePath, null);
+	            else
+	            	Logging.warn("cast.dmt.extractor.mavenbuild.noPomInJar", "JAR", key);
+            }
         }
         catch (Exception e)
         {

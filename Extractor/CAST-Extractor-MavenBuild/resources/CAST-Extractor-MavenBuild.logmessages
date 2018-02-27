@@ -2,22 +2,24 @@
 <messages>
 	<language name="English">
     <!-- ERROR -->
-		<message id="cast.dmt.extractor.mavenbuild.extractionURLNotAbsoluteFailure" format="The path to extract must be an absolute path: %FILE%" />
-		<message id="cast.dmt.extractor.mavenbuild.extractionURLNotFoundFailure" format="The path to extract does not exist: %FILE%" />
-		<message id="cast.dmt.extractor.mavenbuild.directoryListingFailure" format="Failed to read directory content: %DIR%" />
-		<message id="cast.dmt.extractor.mavenbuild.ioExceptionInPomParsing" format="Error while reading the pom file '%JAR%'" />
-		<message id="cast.dmt.extractor.mavenbuild.illegalArgumentException" format="Error while reading the pom file '%JAR%'" />
+		<message id="cast.dmt.extractor.mavenbuild.extractionURLNotAbsoluteFailure" format="The path to extract must be an absolute path: %FILE%" remediation=""/>
+		<message id="cast.dmt.extractor.mavenbuild.extractionURLNotFoundFailure" format="The path to extract does not exist: %FILE%" remediation=""/>
+		<message id="cast.dmt.extractor.mavenbuild.directoryListingFailure" format="Failed to read directory content: %DIR%" remediation=""/>
+		<message id="cast.dmt.extractor.mavenbuild.ioExceptionInPomParsing" format="Error while reading the pom file '%JAR%'" remediation=""/>
+		<message id="cast.dmt.extractor.mavenbuild.illegalArgumentException" format="Error while reading the pom file '%JAR%'" remediation=""/>
 
     <!-- WARNING -->
-		<message id="cast.dmt.extractor.mavenbuild.noPomInJar" format="No pom.xml file found in the jar file '%JAR%'" />
+		<message id="cast.dmt.extractor.mavenbuild.noPomInJar" format="No pom.xml file found in the jar file '%JAR%'" remediation=""/>
+		<message id="cast.dmt.extractor.mavenbuild.invalidName" format="The name of the file '%FILE%' is not valid" remediation="The filename should be like (prefix)[XXX]-(version)[-sources].XXX"/>
 
     <!-- INFO -->
 		<message id="cast.dmt.extractor.mavenbuild.extractingDarFile" format="Extracting the dar file '%DAR%'" />
 		<message id="cast.dmt.extractor.mavenbuild.extractingEarFile" format="Extracting the ear file '%EAR%'" />
-		<message id="cast.dmt.extractor.mavenbuild.extractingWarFile" format="Extracting the ear file '%WAR%'" />
+		<message id="cast.dmt.extractor.mavenbuild.extractingWarFile" format="Extracting the war file '%WAR%'" />
 		<message id="cast.dmt.extractor.mavenbuild.jarMatchingDar" format="Including the jar file '%JAR%' corresponding to the dar file" />
 		<message id="cast.dmt.extractor.mavenbuild.jarMatchingEar" format="Including the jar file '%JAR%' corresponding to the ear file" />
-		<message id="cast.dmt.extractor.mavenbuild.jarWithoutDar" format="Including the jar file '%JAR%' without corresponding dar file" />
+		<message id="cast.dmt.extractor.mavenbuild.jarMatchingWar" format="Including the jar file '%JAR%' corresponding to the ear file" />
+		<message id="cast.dmt.extractor.mavenbuild.jarAlone" format="Including the jar file '%JAR%' without corresponding (dar, ear, war) file" />
 		<message id="cast.dmt.extractor.mavenbuild.pomMatchingJar" format="Including the pom file '%JAR%' corresponding to the jar file" />
 	</language>
 </messages>
