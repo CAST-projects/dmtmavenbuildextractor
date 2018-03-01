@@ -118,7 +118,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     		String filename = f.getName().toLowerCase();
     		String folderParent = f.getParent();
     		String fileRelativePath = ":";
-    		if (folderParent != null)
+    		if (!folderParent.equals(rootFolder.getAbsolutePath()))
     			fileRelativePath = folderParent.substring(rootFolderLength) + ":";
     		
     		if (filename.endsWith(".jar"))
