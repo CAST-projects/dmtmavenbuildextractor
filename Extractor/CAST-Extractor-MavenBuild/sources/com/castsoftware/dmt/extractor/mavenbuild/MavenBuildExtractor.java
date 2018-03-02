@@ -176,6 +176,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     	for (Map.Entry<String, File> entry : darFiles.entrySet()) {
     	    String key = entry.getKey();
     	    File value = entry.getValue();
+    	    
     	    File destinationFolder = root.getContentDirectoryFile();
     	    int index = key.indexOf(":");
     	    String keyName = key.substring(index + 1); 
@@ -185,6 +186,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
     	    	destinationFolder = new File(destinationFolder.getAbsolutePath(), subFolders);
     	    	destinationFolder.mkdirs();
     	    }
+    	    
     		// 2.1 extract the dar
     	    extractDarFile(keyName, value, destinationFolder);
     	    
@@ -289,7 +291,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
 				// move
     			String destinationName = null;
 				try {
-					destinationName = FileHelper.getPortablePath(root.getContentDirectoryFile().getCanonicalPath()) + "/" + key.substring(0, key.lastIndexOf("-")) + "/pom.xml";
+					destinationName = FileHelper.getPortablePath(destinationFolder.getCanonicalPath() + "/" + keyName.substring(0, keyName.lastIndexOf("-"))) + "/pom.xml";
 	    			//File destinationFile = new File(destinationName);
 					//pomFile.renameTo(destinationFile);
 	    			FileHelper.safeCopyFile(null, pomFile.getCanonicalPath(), destinationName);
