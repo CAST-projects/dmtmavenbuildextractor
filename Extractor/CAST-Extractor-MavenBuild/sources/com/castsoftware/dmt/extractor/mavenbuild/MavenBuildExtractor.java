@@ -656,7 +656,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         	sbf.append("</build>");
         	sbf.append("\r\n");
         	//TODO: add the list of jar files as dependencies
-        	if (jarFiles.size() > 0)
+        	if (jarFiles != null && jarFiles.size() > 0)
         	{
             	sbf.append("<dependencies>");
             	sbf.append("\r\n");
@@ -776,6 +776,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 int n;
                 FileOutputStream fileoutputstream;
                 String filename = entryName.substring(entryName.lastIndexOf("/") + 1);
+            	File parentFolder = new File(destinationName + filename).getParentFile();
+            	parentFolder.mkdirs();
                 fileoutputstream = new FileOutputStream(destinationName + filename);             
  
                 while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
@@ -827,6 +829,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                  
                 int n;
                 FileOutputStream fileoutputstream;
+            	File parentFolder = new File(destinationName + entryName).getParentFile();
+            	parentFolder.mkdirs();
                 fileoutputstream = new FileOutputStream(destinationName + entryName);             
  
                 while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
@@ -882,6 +886,8 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 int n;
                 FileOutputStream fileoutputstream;
                 String filename = entryName.substring(entryName.lastIndexOf("/") + 1);
+            	File parentFolder = new File(destinationName + filename).getParentFile();
+            	parentFolder.mkdirs();
                 fileoutputstream = new FileOutputStream(destinationName + filename);             
  
                 while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
@@ -956,10 +962,18 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
                 int n;
                 FileOutputStream fileoutputstream;
                 if (entryName.endsWith("pom.xml"))
+                {
+                	File parentFolder = new File(pomFilePath).getParentFile();
+                	parentFolder.mkdirs();
 	                fileoutputstream = new FileOutputStream(pomFilePath);             
-                else
+                }
+	            else
+                {
+                	File parentFolder = new File(destinationName + entryName).getParentFile();
+                	parentFolder.mkdirs();
 	                fileoutputstream = new FileOutputStream(destinationName + entryName);             
- 
+                }
+                
                 while ((n = zipinputstream.read(buf, 0, 1024)) > -1)
                     fileoutputstream.write(buf, 0, n);
  
@@ -982,7 +996,7 @@ public class MavenBuildExtractor extends AbstractBlankInitialRootExtractor
         }
         catch (Exception e)
         {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }
